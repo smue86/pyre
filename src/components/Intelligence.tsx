@@ -1,15 +1,120 @@
 "use client";
 
 import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
-import { Brain, Thermometer, Clock, ChefHat, Wifi, LineChart } from "lucide-react";
+import { useRef, useState } from "react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  ReferenceLine,
+  Area,
+  ComposedChart,
+  Legend,
+} from "recharts";
+import { Brain, Thermometer, ChefHat, Wifi, LineChart as LineChartIcon } from "lucide-react";
 
-const cookPhases = [
-  { name: "Sear", temp: "500°F", time: "0:15", color: "#ef4444" },
-  { name: "Low & Slow", temp: "225°F", time: "4:00", color: "#c9a962" },
-  { name: "The Stall", temp: "165°F", time: "2:30", color: "#737373" },
-  { name: "Push Through", temp: "275°F", time: "1:30", color: "#c9a962" },
-  { name: "Rest", temp: "145°F", time: "1:00", color: "#22c55e" },
+// Simulated cook data for a brisket cook (9 hours)
+const generateCookData = () => {
+  const data = [];
+  const totalMinutes = 540; // 9 hours
+
+  for (let i = 0; i <= totalMinutes; i += 5) {
+    const hours = i / 60;
+
+    // Chamber temperature - starts high for sear, drops to low & slow, slight bump to push through stall
+    let chamberTemp;
+    if (hours < 0.25) {
+      chamberTemp = 450 + Math.random() * 20; // Searing phase
+    } else if (hours < 0.5) {
+      chamberTemp = 450 - (hours - 0.25) * 800 + Math.random() * 10; // Dropping to low
+    } else if (hours < 6) {
+      chamberTemp = 225 + Math.sin(hours * 0.5) * 8 + Math.random() * 5; // Low & slow with slight variation
+    } else if (hours < 7.5) {
+      chamberTemp = 250 + Math.random() * 8; // Bump up to push through stall
+    } else {
+      chamberTemp = 225 + Math.random() * 5; // Back to holding
+    }
+
+    // Food probe 1 (brisket flat) - gradual rise with stall
+    let probe1;
+    if (hours < 0.25) {
+      probe1 = 38 + hours * 80; // Quick rise during sear
+    } else if (hours < 4) {
+      probe1 = 58 + (hours - 0.25) * 28; // Gradual rise
+    } else if (hours < 6) {
+      probe1 = 163 + (hours - 4) * 2 + Math.random() * 2; // The stall (~165°F)
+    } else if (hours < 8) {
+      probe1 = 167 + (hours - 6) * 15; // Push through stall
+    } else {
+      probe1 = 197 + Math.random() * 3; // Target reached
+    }
+
+    // Food probe 2 (brisket point) - slightly different curve
+    let probe2;
+    if (hours < 0.25) {
+      probe2 = 38 + hours * 70;
+    } else if (hours < 4.5) {
+      probe2 = 55 + (hours - 0.25) * 26;
+    } else if (hours < 6.5) {
+      probe2 = 165 + (hours - 4.5) * 1.5 + Math.random() * 2;
+    } else if (hours < 8.5) {
+      probe2 = 168 + (hours - 6.5) * 16;
+    } else {
+      probe2 = 200 + Math.random() * 3;
+    }
+
+    // Pellet feed rate (lbs/hr) - varies with temperature needs
+    let pelletRate;
+    if (hours < 0.5) {
+      pelletRate = 2.5 + Math.random() * 0.3; // High during sear
+    } else if (hours < 6) {
+      pelletRate = 0.8 + Math.sin(hours * 0.3) * 0.15 + Math.random() * 0.1; // Steady low & slow
+    } else if (hours < 7.5) {
+      pelletRate = 1.2 + Math.random() * 0.15; // Increased for temp bump
+    } else {
+      pelletRate = 0.6 + Math.random() * 0.1; // Reduced for hold
+    }
+
+    // Ambient temperature (external) - slight variation
+    const ambientTemp = 72 + Math.sin(hours * 0.2) * 5 + Math.random() * 2;
+
+    // Smoke density (arbitrary 0-100 scale)
+    let smokeDensity;
+    if (hours < 4) {
+      smokeDensity = 75 + Math.random() * 15; // Heavy smoke early
+    } else if (hours < 6) {
+      smokeDensity = 50 + Math.random() * 10; // Medium smoke
+    } else {
+      smokeDensity = 30 + Math.random() * 10; // Light smoke for finish
+    }
+
+    data.push({
+      time: i,
+      timeLabel: `${Math.floor(hours)}:${String(Math.round((hours % 1) * 60)).padStart(2, "0")}`,
+      chamber: Math.round(chamberTemp),
+      probe1: Math.round(probe1),
+      probe2: Math.round(probe2),
+      pelletRate: Math.round(pelletRate * 100) / 100,
+      ambient: Math.round(ambientTemp),
+      smoke: Math.round(smokeDensity),
+    });
+  }
+  return data;
+};
+
+const cookData = generateCookData();
+
+// Cook phases with timestamps (in minutes)
+const phases = [
+  { time: 0, name: "SEAR", color: "#ef4444" },
+  { time: 30, name: "LOW & SLOW", color: "#c9a962" },
+  { time: 240, name: "THE STALL", color: "#737373" },
+  { time: 360, name: "PUSH THROUGH", color: "#c9a962" },
+  { time: 450, name: "REST", color: "#22c55e" },
 ];
 
 const features = [
@@ -26,7 +131,7 @@ const features = [
       "Replicate the exact cooking profiles of world-renowned pitmasters. From Aaron Franklin's brisket to Michelin-star techniques, perfection is one tap away.",
   },
   {
-    icon: LineChart,
+    icon: LineChartIcon,
     title: "Predictive Analytics",
     description:
       "Know exactly when your cook will finish. Our AI factors in meat weight, ambient temperature, humidity, and cook history for precise timing.",
@@ -39,9 +144,69 @@ const features = [
   },
 ];
 
+// Custom tooltip component
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    const timeInMinutes = payload[0]?.payload?.time || 0;
+    const hours = Math.floor(timeInMinutes / 60);
+    const minutes = timeInMinutes % 60;
+
+    return (
+      <div className="bg-[#0a0a0a]/95 backdrop-blur-sm border border-[#262626] p-4 rounded-lg shadow-xl">
+        <p className="text-[#c9a962] text-sm font-medium mb-3 tracking-wider">
+          {hours}h {minutes}m INTO COOK
+        </p>
+        <div className="space-y-2">
+          {payload.map((entry: any, index: number) => (
+            <div key={index} className="flex items-center justify-between gap-6">
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-2 h-2 rounded-full"
+                  style={{ backgroundColor: entry.color }}
+                />
+                <span className="text-xs text-[#737373] uppercase tracking-wider">
+                  {entry.name}
+                </span>
+              </div>
+              <span className="text-sm text-white font-mono">
+                {entry.name === "Pellet Rate"
+                  ? `${entry.value} lb/hr`
+                  : entry.name === "Smoke"
+                  ? `${entry.value}%`
+                  : `${entry.value}°F`}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
+// Custom legend
+const CustomLegend = ({ payload }: any) => {
+  return (
+    <div className="flex flex-wrap justify-center gap-6 mt-4">
+      {payload?.map((entry: any, index: number) => (
+        <div key={index} className="flex items-center gap-2">
+          <div
+            className="w-3 h-0.5 rounded-full"
+            style={{ backgroundColor: entry.color }}
+          />
+          <span className="text-xs text-[#737373] uppercase tracking-wider">
+            {entry.value}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
 export default function Intelligence() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const [activeMetric, setActiveMetric] = useState<string | null>(null);
 
   return (
     <section
@@ -52,27 +217,13 @@ export default function Intelligence() {
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#0d0d0d] via-[#0a0a0a] to-[#0d0d0d]" />
 
-      {/* Decorative grid lines */}
-      <div className="absolute inset-0 overflow-hidden opacity-20">
-        {[...Array(10)].map((_, i) => (
-          <motion.div
-            key={i}
-            initial={{ scaleX: 0 }}
-            animate={isInView ? { scaleX: 1 } : {}}
-            transition={{ duration: 1, delay: i * 0.1 }}
-            className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#c9a962] to-transparent"
-            style={{ top: `${10 + i * 8}%` }}
-          />
-        ))}
-      </div>
-
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
         {/* Section header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8 }}
-          className="text-center mb-20"
+          className="text-center mb-16"
         >
           <p className="text-sm tracking-[0.4em] text-[#c9a962] mb-6">
             INTELLIGENT COOKING SYSTEM
@@ -94,107 +245,281 @@ export default function Intelligence() {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="mb-24"
         >
-          <div className="max-w-4xl mx-auto">
-            <div className="flex items-center justify-between mb-4 px-4">
-              <p className="text-sm tracking-[0.2em] text-[#737373]">
-                BRISKET COOK JOURNEY
-              </p>
-              <p className="text-sm text-[#525252]">Based on Aaron Franklin method</p>
+          <div className="max-w-6xl mx-auto">
+            {/* Chart header */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+              <div>
+                <h3 className="text-xl md:text-2xl font-light text-white mb-1">
+                  Brisket Cook Journey
+                </h3>
+                <p className="text-sm text-[#525252]">
+                  Based on Aaron Franklin method • 12 lb brisket • 9 hour cook
+                </p>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 bg-[#141414] border border-[#262626] rounded-lg">
+                <Brain size={16} className="text-[#c9a962]" />
+                <span className="text-xs tracking-wider text-[#737373]">
+                  AI OPTIMIZED
+                </span>
+              </div>
             </div>
 
-            {/* Journey timeline */}
-            <div className="relative p-8 bg-[#0d0d0d] border border-[#262626] rounded-lg">
-              {/* Temperature graph placeholder */}
-              <div className="relative h-48 mb-8">
-                {/* Y-axis labels */}
-                <div className="absolute left-0 top-0 bottom-0 flex flex-col justify-between text-xs text-[#525252] w-12">
-                  <span>500°F</span>
-                  <span>350°F</span>
-                  <span>225°F</span>
-                  <span>100°F</span>
-                </div>
+            {/* Main chart container */}
+            <div className="relative p-6 md:p-8 bg-[#0d0d0d] border border-[#262626] rounded-xl">
+              {/* Phase labels at top */}
+              <div className="flex mb-4 ml-12 mr-4">
+                {phases.map((phase, index) => {
+                  const nextPhase = phases[index + 1];
+                  const startPercent = (phase.time / 540) * 100;
+                  const widthPercent = nextPhase
+                    ? ((nextPhase.time - phase.time) / 540) * 100
+                    : ((540 - phase.time) / 540) * 100;
 
-                {/* Graph area */}
-                <div className="ml-14 h-full relative">
-                  {/* Graph line */}
-                  <svg className="absolute inset-0 w-full h-full">
-                    <motion.path
-                      initial={{ pathLength: 0 }}
-                      animate={isInView ? { pathLength: 1 } : {}}
-                      transition={{ duration: 2, delay: 0.5 }}
-                      d="M 0 20 L 40 20 L 60 180 L 200 170 L 260 140 L 340 180 L 400 160"
-                      fill="none"
-                      stroke="#c9a962"
-                      strokeWidth="2"
-                      className="drop-shadow-lg"
-                      style={{
-                        filter: "drop-shadow(0 0 4px rgba(201, 169, 98, 0.5))",
-                      }}
+                  return (
+                    <div
+                      key={phase.name}
+                      className="text-center"
+                      style={{ width: `${widthPercent}%` }}
+                    >
+                      <span
+                        className="text-[10px] md:text-xs tracking-wider font-medium px-2 py-1 rounded"
+                        style={{ color: phase.color }}
+                      >
+                        {phase.name}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Chart */}
+              <div className="h-[400px] md:h-[450px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <ComposedChart
+                    data={cookData}
+                    margin={{ top: 10, right: 10, left: 0, bottom: 10 }}
+                  >
+                    {/* Grid */}
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="#262626"
+                      vertical={false}
                     />
-                    {/* Grid lines */}
-                    {[...Array(4)].map((_, i) => (
-                      <line
-                        key={i}
-                        x1="0"
-                        y1={i * 60}
-                        x2="100%"
-                        y2={i * 60}
-                        stroke="#262626"
-                        strokeWidth="1"
+
+                    {/* Phase reference lines */}
+                    {phases.map((phase) => (
+                      <ReferenceLine
+                        key={phase.name}
+                        x={phase.time}
+                        stroke={phase.color}
+                        strokeWidth={1}
+                        strokeDasharray="4 4"
+                        opacity={0.6}
                       />
                     ))}
-                  </svg>
 
-                  {/* Phase markers */}
-                  <div className="absolute bottom-0 left-0 right-0 flex">
-                    {cookPhases.map((phase, i) => (
-                      <motion.div
-                        key={phase.name}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={isInView ? { opacity: 1, y: 0 } : {}}
-                        transition={{ duration: 0.5, delay: 0.8 + i * 0.1 }}
-                        className="flex-1 text-center border-l border-[#262626] first:border-l-0"
-                      >
-                        <div
-                          className="w-2 h-2 rounded-full mx-auto mb-2"
-                          style={{ backgroundColor: phase.color }}
-                        />
-                      </motion.div>
-                    ))}
+                    {/* Target temperature reference */}
+                    <ReferenceLine
+                      y={203}
+                      stroke="#22c55e"
+                      strokeWidth={1}
+                      strokeDasharray="8 4"
+                      opacity={0.4}
+                      label={{
+                        value: "TARGET 203°F",
+                        position: "right",
+                        fill: "#22c55e",
+                        fontSize: 10,
+                        opacity: 0.7,
+                      }}
+                    />
+
+                    {/* Stall zone */}
+                    <ReferenceLine
+                      y={165}
+                      stroke="#737373"
+                      strokeWidth={1}
+                      strokeDasharray="4 4"
+                      opacity={0.3}
+                      label={{
+                        value: "STALL ZONE",
+                        position: "right",
+                        fill: "#737373",
+                        fontSize: 10,
+                        opacity: 0.5,
+                      }}
+                    />
+
+                    {/* Axes */}
+                    <XAxis
+                      dataKey="time"
+                      tickFormatter={(value) => {
+                        const hours = Math.floor(value / 60);
+                        return `${hours}h`;
+                      }}
+                      stroke="#404040"
+                      tick={{ fill: "#525252", fontSize: 11 }}
+                      tickLine={{ stroke: "#404040" }}
+                      axisLine={{ stroke: "#262626" }}
+                      interval={Math.floor(cookData.length / 9)}
+                    />
+                    <YAxis
+                      yAxisId="temp"
+                      domain={[0, 500]}
+                      stroke="#404040"
+                      tick={{ fill: "#525252", fontSize: 11 }}
+                      tickLine={{ stroke: "#404040" }}
+                      axisLine={{ stroke: "#262626" }}
+                      tickFormatter={(value) => `${value}°`}
+                    />
+                    <YAxis
+                      yAxisId="rate"
+                      orientation="right"
+                      domain={[0, 3]}
+                      stroke="#404040"
+                      tick={{ fill: "#525252", fontSize: 11 }}
+                      tickLine={{ stroke: "#404040" }}
+                      axisLine={{ stroke: "#262626" }}
+                      tickFormatter={(value) => `${value}`}
+                      hide
+                    />
+
+                    {/* Tooltip */}
+                    <Tooltip content={<CustomTooltip />} />
+
+                    {/* Legend */}
+                    <Legend content={<CustomLegend />} />
+
+                    {/* Data lines */}
+                    <Line
+                      yAxisId="temp"
+                      type="monotone"
+                      dataKey="chamber"
+                      name="Chamber"
+                      stroke="#c9a962"
+                      strokeWidth={2}
+                      dot={false}
+                      activeDot={{ r: 4, fill: "#c9a962" }}
+                    />
+                    <Line
+                      yAxisId="temp"
+                      type="monotone"
+                      dataKey="probe1"
+                      name="Probe 1 (Flat)"
+                      stroke="#ef4444"
+                      strokeWidth={2}
+                      dot={false}
+                      activeDot={{ r: 4, fill: "#ef4444" }}
+                    />
+                    <Line
+                      yAxisId="temp"
+                      type="monotone"
+                      dataKey="probe2"
+                      name="Probe 2 (Point)"
+                      stroke="#f97316"
+                      strokeWidth={2}
+                      dot={false}
+                      activeDot={{ r: 4, fill: "#f97316" }}
+                    />
+                    <Line
+                      yAxisId="temp"
+                      type="monotone"
+                      dataKey="ambient"
+                      name="Ambient"
+                      stroke="#3b82f6"
+                      strokeWidth={1.5}
+                      strokeDasharray="4 2"
+                      dot={false}
+                      activeDot={{ r: 3, fill: "#3b82f6" }}
+                    />
+                    <Area
+                      yAxisId="rate"
+                      type="monotone"
+                      dataKey="pelletRate"
+                      name="Pellet Rate"
+                      stroke="#22c55e"
+                      strokeWidth={1}
+                      fill="#22c55e"
+                      fillOpacity={0.1}
+                      dot={false}
+                      activeDot={{ r: 3, fill: "#22c55e" }}
+                    />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* Chart footer - metrics summary */}
+              <div className="mt-6 pt-6 border-t border-[#262626]">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                  <div className="text-center">
+                    <p className="text-2xl md:text-3xl font-extralight text-white">
+                      9<span className="text-lg text-[#737373]">h</span> 00<span className="text-lg text-[#737373]">m</span>
+                    </p>
+                    <p className="text-xs text-[#525252] tracking-wider mt-1">TOTAL TIME</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl md:text-3xl font-extralight text-[#c9a962]">
+                      225<span className="text-lg text-[#737373]">°F</span>
+                    </p>
+                    <p className="text-xs text-[#525252] tracking-wider mt-1">AVG CHAMBER</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl md:text-3xl font-extralight text-[#ef4444]">
+                      203<span className="text-lg text-[#737373]">°F</span>
+                    </p>
+                    <p className="text-xs text-[#525252] tracking-wider mt-1">FINAL INTERNAL</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl md:text-3xl font-extralight text-[#22c55e]">
+                      6.2<span className="text-lg text-[#737373]">lb</span>
+                    </p>
+                    <p className="text-xs text-[#525252] tracking-wider mt-1">PELLETS USED</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl md:text-3xl font-extralight text-[#3b82f6]">
+                      ±3<span className="text-lg text-[#737373]">°F</span>
+                    </p>
+                    <p className="text-xs text-[#525252] tracking-wider mt-1">TEMP VARIANCE</p>
                   </div>
                 </div>
               </div>
-
-              {/* Phase labels */}
-              <div className="flex ml-14">
-                {cookPhases.map((phase, i) => (
-                  <motion.div
-                    key={phase.name}
-                    initial={{ opacity: 0 }}
-                    animate={isInView ? { opacity: 1 } : {}}
-                    transition={{ duration: 0.5, delay: 1 + i * 0.1 }}
-                    className="flex-1 text-center px-2"
-                  >
-                    <p className="text-sm text-white mb-1">{phase.name}</p>
-                    <p className="text-xs text-[#c9a962]">{phase.temp}</p>
-                    <p className="text-xs text-[#525252]">{phase.time}</p>
-                  </motion.div>
-                ))}
-              </div>
-
-              {/* AI indicator */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={isInView ? { opacity: 1 } : {}}
-                transition={{ duration: 0.5, delay: 1.5 }}
-                className="mt-8 pt-8 border-t border-[#262626] flex items-center justify-center gap-4"
-              >
-                <Brain size={20} className="text-[#c9a962]" strokeWidth={1} />
-                <p className="text-sm text-[#737373]">
-                  AI continuously adjusts pellet feed, convection, and dampers based on real-time conditions
-                </p>
-              </motion.div>
             </div>
+
+            {/* AI insights */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="mt-6 grid md:grid-cols-3 gap-4"
+            >
+              <div className="p-4 bg-[#141414] border border-[#262626] rounded-lg">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-2 h-2 rounded-full bg-[#c9a962]" />
+                  <p className="text-xs tracking-wider text-[#c9a962]">AI ADJUSTMENT</p>
+                </div>
+                <p className="text-sm text-[#a3a3a3]">
+                  Increased chamber temp by 25°F at hour 6 to push through stall faster
+                </p>
+              </div>
+              <div className="p-4 bg-[#141414] border border-[#262626] rounded-lg">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-2 h-2 rounded-full bg-[#22c55e]" />
+                  <p className="text-xs tracking-wider text-[#22c55e]">PELLET OPTIMIZATION</p>
+                </div>
+                <p className="text-sm text-[#a3a3a3]">
+                  Reduced feed rate by 15% after bark formation to conserve fuel
+                </p>
+              </div>
+              <div className="p-4 bg-[#141414] border border-[#262626] rounded-lg">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-2 h-2 rounded-full bg-[#3b82f6]" />
+                  <p className="text-xs tracking-wider text-[#3b82f6]">AMBIENT COMPENSATION</p>
+                </div>
+                <p className="text-sm text-[#a3a3a3]">
+                  Detected 8°F ambient drop at hour 4, auto-adjusted dampers
+                </p>
+              </div>
+            </motion.div>
           </div>
         </motion.div>
 
