@@ -184,7 +184,7 @@ export default function Swag() {
                       {product.name}
                     </p>
                     <p className="text-[10px] tracking-[0.2em] text-[#c9a962]">
-                      COMING SOON
+                      SHOP NOW
                     </p>
                   </div>
                 </div>
@@ -199,16 +199,12 @@ export default function Swag() {
           transition={{ duration: 0.8, delay: 0.6 }}
           className="text-center mt-10"
         >
-          <p className="text-sm text-[#525252] font-light">
-            Merch drops with the founding edition.{" "}
-            <a
-              href="#cta"
-              className="text-[#c9a962] hover:text-white transition-colors"
-            >
-              Get notified
-            </a>
-            .
-          </p>
+          <a
+            href="#"
+            className="inline-flex items-center text-sm tracking-[0.2em] text-[#c9a962] hover:text-white transition-colors"
+          >
+            SHOP ALL SWAG
+          </a>
         </motion.div>
       </div>
     </section>
