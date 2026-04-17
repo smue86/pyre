@@ -12,10 +12,10 @@ export default function Hero() {
       {/* TODO: Replace with <video autoPlay muted loop playsInline> when video asset is ready */}
       <div className="absolute inset-0">
         <Image
-          src="/images/pyre-hero.jpeg"
+          src="/images/pyre-hero-single.jpeg"
           alt="PYRE outdoor cooking experience"
           fill
-          className="object-cover object-[25%_center]"
+          className="object-cover"
           priority
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/70 via-[#0a0a0a]/40 to-[#0a0a0a]/90" />
