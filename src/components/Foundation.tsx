@@ -127,54 +127,104 @@ export default function Foundation() {
           ))}
         </motion.div>
 
-        {/* Feature columns */}
-        <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center mb-32">
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="relative order-2 lg:order-1"
-          >
-            <div className="relative rounded-lg overflow-hidden border border-[#262626]">
-              <Image
-                src="/images/pyre-display.png"
-                alt="PYRE temperature display"
-                width={800}
-                height={1000}
-                className="w-full h-auto"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a]/60 via-transparent to-transparent" />
-              <div className="absolute bottom-4 left-4 right-4">
-                <p className="text-xs tracking-[0.2em] text-[#c9a962]">
-                  PRECISION TEMPERATURE CONTROL
-                </p>
+        {/* Feature sections with dedicated images */}
+        <div className="space-y-24 mb-32">
+          {/* Advanced Ceramic Foam */}
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -40 }}
+              animate={isInView ? { opacity: 1, x: 0 } : {}}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="relative"
+            >
+              <div className="relative rounded-lg overflow-hidden border border-[#262626]">
+                <Image
+                  src="/images/aerocore-foam.png"
+                  alt="AeroCore ceramic foam cross-section showing cellular microstructure"
+                  width={1200}
+                  height={800}
+                  className="w-full h-auto"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a]/40 via-transparent to-transparent" />
+                <div className="absolute bottom-4 left-4">
+                  <p className="text-xs tracking-[0.2em] text-[#c9a962]">
+                    CELLULAR MICROSTRUCTURE
+                  </p>
+                </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
 
+            <motion.div
+              initial={{ opacity: 0, x: 40 }}
+              animate={isInView ? { opacity: 1, x: 0 } : {}}
+              transition={{ duration: 0.8, delay: 0.5 }}
+              className="group"
+            >
+              <h3 className="text-2xl md:text-3xl font-light text-white mb-6 group-hover:text-[#c9a962] transition-colors duration-300">
+                {features[0].title}
+              </h3>
+              <p className="text-[#737373] leading-relaxed text-base md:text-lg">
+                {features[0].description}
+              </p>
+              <div className="mt-6 w-12 h-px bg-[#262626] group-hover:w-24 group-hover:bg-[#c9a962] transition-all duration-500" />
+            </motion.div>
+          </div>
+
+          {/* Integrated Convection Channels */}
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: 40 }}
+              animate={isInView ? { opacity: 1, x: 0 } : {}}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="order-1 lg:order-2 relative"
+            >
+              <div className="relative rounded-lg overflow-hidden border border-[#262626]">
+                <Image
+                  src="/images/aerocore-convection.png"
+                  alt="AeroCore convection channel system showing airflow paths"
+                  width={1200}
+                  height={800}
+                  className="w-full h-auto"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a]/40 via-transparent to-transparent" />
+                <div className="absolute bottom-4 left-4">
+                  <p className="text-xs tracking-[0.2em] text-[#c9a962]">
+                    INTEGRATED AIR CHANNELS
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: -40 }}
+              animate={isInView ? { opacity: 1, x: 0 } : {}}
+              transition={{ duration: 0.8, delay: 0.5 }}
+              className="order-2 lg:order-1 group"
+            >
+              <h3 className="text-2xl md:text-3xl font-light text-white mb-6 group-hover:text-[#c9a962] transition-colors duration-300">
+                {features[1].title}
+              </h3>
+              <p className="text-[#737373] leading-relaxed text-base md:text-lg">
+                {features[1].description}
+              </p>
+              <div className="mt-6 w-12 h-px bg-[#262626] group-hover:w-24 group-hover:bg-[#c9a962] transition-all duration-500" />
+            </motion.div>
+          </div>
+
+          {/* Next-Generation Durability — text only */}
           <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="space-y-12 order-1 lg:order-2"
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8, delay: 0.5 }}
+            className="max-w-2xl mx-auto text-center group"
           >
-            {features.map((feature, index) => (
-              <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.6, delay: 0.5 + index * 0.1 }}
-                className="group"
-              >
-                <h3 className="text-xl md:text-2xl font-light text-white mb-4 group-hover:text-[#c9a962] transition-colors duration-300">
-                  {feature.title}
-                </h3>
-                <p className="text-[#737373] leading-relaxed">
-                  {feature.description}
-                </p>
-                <div className="mt-4 w-12 h-px bg-[#262626] group-hover:w-24 group-hover:bg-[#c9a962] transition-all duration-500" />
-              </motion.div>
-            ))}
+            <h3 className="text-2xl md:text-3xl font-light text-white mb-6 group-hover:text-[#c9a962] transition-colors duration-300">
+              {features[2].title}
+            </h3>
+            <p className="text-[#737373] leading-relaxed text-base md:text-lg">
+              {features[2].description}
+            </p>
+            <div className="mt-6 w-12 h-px bg-[#262626] group-hover:w-24 group-hover:bg-[#c9a962] transition-all duration-500 mx-auto" />
           </motion.div>
         </div>
 
