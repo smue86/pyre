@@ -1,22 +1,18 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState } from "react";
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import Image from "next/image";
 import {
   ArrowLeft,
   ArrowRight,
   Check,
-  ChevronDown,
-  Flame,
   Palette,
   Layers,
   Boxes,
   Wrench,
   ShoppingBag,
-  RotateCcw,
 } from "lucide-react";
 import {
   colors,
@@ -24,19 +20,18 @@ import {
   cookingModules,
   accessories,
   tools,
-  calculateTotal,
   Configuration,
-  BASE_PRICE,
 } from "@/lib/configurator-data";
 
-// Dynamically import 3D viewer to avoid SSR issues
 const PyreViewer3D = dynamic(() => import("@/components/PyreViewer3D"), {
   ssr: false,
   loading: () => (
     <div className="w-full h-full flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
         <div className="w-12 h-12 border-2 border-[#c9a962] border-t-transparent rounded-full animate-spin" />
-        <p className="text-sm tracking-[0.2em] text-[#737373]">LOADING 3D MODEL</p>
+        <p className="text-sm tracking-[0.2em] text-[#737373]">
+          LOADING 3D MODEL
+        </p>
       </div>
     </div>
   ),
@@ -61,8 +56,6 @@ export default function ConfiguratorPage() {
     tools: [],
   });
 
-  const total = calculateTotal(config);
-
   const toggleItem = (
     category: "modules" | "accessories" | "tools",
     id: string
@@ -76,26 +69,27 @@ export default function ConfiguratorPage() {
   };
 
   const nextStep = () => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
-    }
+    if (currentStep < steps.length - 1) setCurrentStep(currentStep + 1);
   };
 
   const prevStep = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
+    if (currentStep > 0) setCurrentStep(currentStep - 1);
   };
 
   const selectedColor = colors.find((c) => c.id === config.color);
 
+  const itemCount =
+    config.modules.length + config.accessories.length + config.tools.length;
+
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex flex-col">
-      {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0a]/90 backdrop-blur-xl border-b border-[#262626]/50">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
-            <Link href="/" className="flex items-center gap-4 text-[#737373] hover:text-white transition-colors">
+            <Link
+              href="/"
+              className="flex items-center gap-4 text-[#737373] hover:text-white transition-colors"
+            >
               <ArrowLeft size={20} />
               <span className="text-sm tracking-widest">BACK</span>
             </Link>
@@ -108,17 +102,19 @@ export default function ConfiguratorPage() {
 
             <div className="text-right">
               <p className="text-xs text-[#525252]">YOUR BUILD</p>
-              <p className="text-xl font-light price-tag">${total.toLocaleString()}</p>
+              <p className="text-sm text-[#c9a962] tracking-wider">
+                {itemCount > 0
+                  ? `${itemCount} item${itemCount > 1 ? "s" : ""} selected`
+                  : "Base config"}
+              </p>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Main content */}
       <div className="flex-1 pt-20 flex">
         {/* Left side - 3D Product Viewer */}
         <div className="hidden lg:flex flex-1 flex-col configurator-view sticky top-20 h-[calc(100vh-5rem)]">
-          {/* 3D Viewer */}
           <div className="flex-1 relative">
             <PyreViewer3D
               color={config.color}
@@ -127,7 +123,6 @@ export default function ConfiguratorPage() {
             />
           </div>
 
-          {/* Configuration summary below viewer */}
           <div className="p-6 border-t border-[#262626]/50 bg-[#0a0a0a]/80 backdrop-blur-sm">
             <div className="flex items-center justify-between">
               <div>
@@ -136,22 +131,23 @@ export default function ConfiguratorPage() {
                 </p>
                 {config.base !== "no-base" && (
                   <p className="text-xs tracking-[0.15em] text-[#525252] mt-1">
-                    WITH {baseOptions.find(b => b.id === config.base)?.name.toUpperCase()}
+                    WITH{" "}
+                    {baseOptions
+                      .find((b) => b.id === config.base)
+                      ?.name.toUpperCase()}
                   </p>
                 )}
               </div>
-
-              {/* Module badges */}
               {config.modules.length > 0 && (
                 <div className="flex flex-wrap gap-2 justify-end">
                   {config.modules.slice(0, 3).map((id) => {
-                    const module = cookingModules.find(m => m.id === id);
+                    const module = cookingModules.find((m) => m.id === id);
                     return (
                       <span
                         key={id}
                         className="px-2 py-1 bg-[#c9a962]/10 border border-[#c9a962]/30 text-[#c9a962] text-xs tracking-wider"
                       >
-                        {module?.name.split(' ')[0].toUpperCase()}
+                        {module?.name.split(" ")[0].toUpperCase()}
                       </span>
                     );
                   })}
@@ -168,19 +164,18 @@ export default function ConfiguratorPage() {
 
         {/* Right side - Configuration options */}
         <div className="w-full lg:w-[500px] xl:w-[600px] border-l border-[#262626] flex flex-col">
-          {/* Step indicator */}
           <div className="p-6 border-b border-[#262626]">
             <div className="flex items-center justify-between mb-4">
               {steps.map((step, index) => (
                 <button
                   key={step.id}
                   onClick={() => setCurrentStep(index)}
-                  className={`flex flex-col items-center gap-2 transition-all ${
+                  className={`flex flex-col items-center gap-2 transition-all cursor-pointer ${
                     index === currentStep
                       ? "text-[#c9a962]"
                       : index < currentStep
-                      ? "text-[#737373]"
-                      : "text-[#404040]"
+                        ? "text-[#737373]"
+                        : "text-[#404040]"
                   }`}
                 >
                   <div
@@ -188,8 +183,8 @@ export default function ConfiguratorPage() {
                       index === currentStep
                         ? "border-[#c9a962] bg-[#c9a962]/10"
                         : index < currentStep
-                        ? "border-[#737373]"
-                        : "border-[#404040]"
+                          ? "border-[#737373]"
+                          : "border-[#404040]"
                     }`}
                   >
                     {index < currentStep ? (
@@ -208,13 +203,14 @@ export default function ConfiguratorPage() {
               <motion.div
                 className="h-full bg-[#c9a962]"
                 initial={{ width: 0 }}
-                animate={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
+                animate={{
+                  width: `${((currentStep + 1) / steps.length) * 100}%`,
+                }}
                 transition={{ duration: 0.3 }}
               />
             </div>
           </div>
 
-          {/* Step content */}
           <div className="flex-1 overflow-y-auto p-6">
             <AnimatePresence mode="wait">
               <motion.div
@@ -227,18 +223,23 @@ export default function ConfiguratorPage() {
                 {/* Color Step */}
                 {currentStep === 0 && (
                   <div>
-                    <h2 className="text-2xl font-light mb-2">Choose Your Exterior</h2>
+                    <h2 className="text-2xl font-light mb-2">
+                      Choose Your Exterior
+                    </h2>
                     <p className="text-[#737373] mb-8">
-                      Select from our curated palette of premium ceramic finishes.
+                      Select from our curated palette of premium finishes.
                     </p>
                     <div className="grid grid-cols-2 gap-4">
                       {colors.map((color) => (
                         <button
                           key={color.id}
                           onClick={() =>
-                            setConfig((prev) => ({ ...prev, color: color.id }))
+                            setConfig((prev) => ({
+                              ...prev,
+                              color: color.id,
+                            }))
                           }
-                          className={`group p-4 border rounded-lg transition-all ${
+                          className={`group p-4 border rounded-lg transition-all cursor-pointer ${
                             config.color === color.id
                               ? "border-[#c9a962] bg-[#c9a962]/5"
                               : "border-[#262626] hover:border-[#404040]"
@@ -257,14 +258,9 @@ export default function ConfiguratorPage() {
                                     : "transparent",
                               }}
                             />
-                            <div className="text-left">
-                              <p className="text-white font-light">{color.name}</p>
-                              <p className="text-sm text-[#525252]">
-                                {color.price === 0
-                                  ? "Included"
-                                  : `+$${color.price}`}
-                              </p>
-                            </div>
+                            <p className="text-white font-light text-left">
+                              {color.name}
+                            </p>
                           </div>
                         </button>
                       ))}
@@ -275,7 +271,9 @@ export default function ConfiguratorPage() {
                 {/* Base Step */}
                 {currentStep === 1 && (
                   <div>
-                    <h2 className="text-2xl font-light mb-2">Select Your Base</h2>
+                    <h2 className="text-2xl font-light mb-2">
+                      Select Your Base
+                    </h2>
                     <p className="text-[#737373] mb-8">
                       Choose how you want to mount your PYRE.
                     </p>
@@ -284,9 +282,12 @@ export default function ConfiguratorPage() {
                         <button
                           key={base.id}
                           onClick={() =>
-                            setConfig((prev) => ({ ...prev, base: base.id }))
+                            setConfig((prev) => ({
+                              ...prev,
+                              base: base.id,
+                            }))
                           }
-                          className={`w-full p-6 border rounded-lg text-left transition-all ${
+                          className={`w-full p-6 border rounded-lg text-left transition-all cursor-pointer ${
                             config.base === base.id
                               ? "border-[#c9a962] bg-[#c9a962]/5"
                               : "border-[#262626] hover:border-[#404040]"
@@ -301,19 +302,9 @@ export default function ConfiguratorPage() {
                                 {base.description}
                               </p>
                             </div>
-                            <div className="text-right">
-                              <p className="text-[#c9a962]">
-                                {base.price === 0
-                                  ? "Included"
-                                  : `+$${base.price}`}
-                              </p>
-                              {config.base === base.id && (
-                                <Check
-                                  size={20}
-                                  className="text-[#c9a962] mt-2 ml-auto"
-                                />
-                              )}
-                            </div>
+                            {config.base === base.id && (
+                              <Check size={20} className="text-[#c9a962]" />
+                            )}
                           </div>
                         </button>
                       ))}
@@ -324,7 +315,9 @@ export default function ConfiguratorPage() {
                 {/* Modules Step */}
                 {currentStep === 2 && (
                   <div>
-                    <h2 className="text-2xl font-light mb-2">Add Cooking Modules</h2>
+                    <h2 className="text-2xl font-light mb-2">
+                      Add Cooking Modules
+                    </h2>
                     <p className="text-[#737373] mb-8">
                       Expand your capabilities with bolt-on modules.
                     </p>
@@ -333,7 +326,7 @@ export default function ConfiguratorPage() {
                         <button
                           key={module.id}
                           onClick={() => toggleItem("modules", module.id)}
-                          className={`w-full p-6 border rounded-lg text-left transition-all ${
+                          className={`w-full p-6 border rounded-lg text-left transition-all cursor-pointer ${
                             config.modules.includes(module.id)
                               ? "border-[#c9a962] bg-[#c9a962]/5"
                               : "border-[#262626] hover:border-[#404040]"
@@ -348,19 +341,16 @@ export default function ConfiguratorPage() {
                                 {module.description}
                               </p>
                             </div>
-                            <div className="text-right ml-4">
-                              <p className="text-[#c9a962]">+${module.price}</p>
-                              <div
-                                className={`mt-2 w-6 h-6 rounded border flex items-center justify-center transition-all ${
-                                  config.modules.includes(module.id)
-                                    ? "bg-[#c9a962] border-[#c9a962]"
-                                    : "border-[#404040]"
-                                }`}
-                              >
-                                {config.modules.includes(module.id) && (
-                                  <Check size={14} className="text-[#0a0a0a]" />
-                                )}
-                              </div>
+                            <div
+                              className={`ml-4 w-6 h-6 rounded border flex items-center justify-center transition-all ${
+                                config.modules.includes(module.id)
+                                  ? "bg-[#c9a962] border-[#c9a962]"
+                                  : "border-[#404040]"
+                              }`}
+                            >
+                              {config.modules.includes(module.id) && (
+                                <Check size={14} className="text-[#0a0a0a]" />
+                              )}
                             </div>
                           </div>
                         </button>
@@ -372,7 +362,9 @@ export default function ConfiguratorPage() {
                 {/* Accessories Step */}
                 {currentStep === 3 && (
                   <div>
-                    <h2 className="text-2xl font-light mb-2">Add Accessories</h2>
+                    <h2 className="text-2xl font-light mb-2">
+                      Add Accessories
+                    </h2>
                     <p className="text-[#737373] mb-8">
                       Essential additions for the complete experience.
                     </p>
@@ -381,7 +373,7 @@ export default function ConfiguratorPage() {
                         <button
                           key={item.id}
                           onClick={() => toggleItem("accessories", item.id)}
-                          className={`w-full p-6 border rounded-lg text-left transition-all ${
+                          className={`w-full p-6 border rounded-lg text-left transition-all cursor-pointer ${
                             config.accessories.includes(item.id)
                               ? "border-[#c9a962] bg-[#c9a962]/5"
                               : "border-[#262626] hover:border-[#404040]"
@@ -396,19 +388,16 @@ export default function ConfiguratorPage() {
                                 {item.description}
                               </p>
                             </div>
-                            <div className="text-right ml-4">
-                              <p className="text-[#c9a962]">+${item.price}</p>
-                              <div
-                                className={`mt-2 w-6 h-6 rounded border flex items-center justify-center transition-all ${
-                                  config.accessories.includes(item.id)
-                                    ? "bg-[#c9a962] border-[#c9a962]"
-                                    : "border-[#404040]"
-                                }`}
-                              >
-                                {config.accessories.includes(item.id) && (
-                                  <Check size={14} className="text-[#0a0a0a]" />
-                                )}
-                              </div>
+                            <div
+                              className={`ml-4 w-6 h-6 rounded border flex items-center justify-center transition-all ${
+                                config.accessories.includes(item.id)
+                                  ? "bg-[#c9a962] border-[#c9a962]"
+                                  : "border-[#404040]"
+                              }`}
+                            >
+                              {config.accessories.includes(item.id) && (
+                                <Check size={14} className="text-[#0a0a0a]" />
+                              )}
                             </div>
                           </div>
                         </button>
@@ -429,7 +418,7 @@ export default function ConfiguratorPage() {
                         <button
                           key={item.id}
                           onClick={() => toggleItem("tools", item.id)}
-                          className={`w-full p-6 border rounded-lg text-left transition-all ${
+                          className={`w-full p-6 border rounded-lg text-left transition-all cursor-pointer ${
                             config.tools.includes(item.id)
                               ? "border-[#c9a962] bg-[#c9a962]/5"
                               : "border-[#262626] hover:border-[#404040]"
@@ -444,19 +433,16 @@ export default function ConfiguratorPage() {
                                 {item.description}
                               </p>
                             </div>
-                            <div className="text-right ml-4">
-                              <p className="text-[#c9a962]">+${item.price}</p>
-                              <div
-                                className={`mt-2 w-6 h-6 rounded border flex items-center justify-center transition-all ${
-                                  config.tools.includes(item.id)
-                                    ? "bg-[#c9a962] border-[#c9a962]"
-                                    : "border-[#404040]"
-                                }`}
-                              >
-                                {config.tools.includes(item.id) && (
-                                  <Check size={14} className="text-[#0a0a0a]" />
-                                )}
-                              </div>
+                            <div
+                              className={`ml-4 w-6 h-6 rounded border flex items-center justify-center transition-all ${
+                                config.tools.includes(item.id)
+                                  ? "bg-[#c9a962] border-[#c9a962]"
+                                  : "border-[#404040]"
+                              }`}
+                            >
+                              {config.tools.includes(item.id) && (
+                                <Check size={14} className="text-[#0a0a0a]" />
+                              )}
                             </div>
                           </div>
                         </button>
@@ -468,106 +454,88 @@ export default function ConfiguratorPage() {
                 {/* Summary Step */}
                 {currentStep === 5 && (
                   <div>
-                    <h2 className="text-2xl font-light mb-2">Your Configuration</h2>
+                    <h2 className="text-2xl font-light mb-2">
+                      Your Configuration
+                    </h2>
                     <p className="text-[#737373] mb-8">
-                      Review your build before reserving.
+                      Review your build and reserve your place.
                     </p>
 
                     <div className="space-y-6">
-                      {/* Base unit */}
                       <div className="p-4 bg-[#141414] border border-[#262626] rounded-lg">
-                        <div className="flex justify-between items-center">
+                        <p className="text-sm text-[#737373]">PYRE Base Unit</p>
+                        <p className="text-white">Ceramic Firebox</p>
+                      </div>
+
+                      <div className="p-4 bg-[#141414] border border-[#262626] rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="w-6 h-6 rounded-full"
+                            style={{
+                              backgroundColor: selectedColor?.hex,
+                            }}
+                          />
                           <div>
-                            <p className="text-sm text-[#737373]">PYRE Base Unit</p>
-                            <p className="text-white">AeroCore™ Ceramic Grill</p>
+                            <p className="text-sm text-[#737373]">
+                              Exterior Color
+                            </p>
+                            <p className="text-white">{selectedColor?.name}</p>
                           </div>
-                          <p className="text-[#c9a962] price-tag">
-                            ${BASE_PRICE.toLocaleString()}
-                          </p>
                         </div>
                       </div>
 
-                      {/* Color */}
-                      <div className="p-4 bg-[#141414] border border-[#262626] rounded-lg">
-                        <div className="flex justify-between items-center">
-                          <div className="flex items-center gap-3">
-                            <div
-                              className="w-6 h-6 rounded-full"
-                              style={{ backgroundColor: selectedColor?.hex }}
-                            />
-                            <div>
-                              <p className="text-sm text-[#737373]">Exterior Color</p>
-                              <p className="text-white">{selectedColor?.name}</p>
-                            </div>
-                          </div>
-                          <p className="text-[#c9a962]">
-                            {selectedColor?.price === 0
-                              ? "Included"
-                              : `+$${selectedColor?.price}`}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Base */}
                       {config.base !== "no-base" && (
                         <div className="p-4 bg-[#141414] border border-[#262626] rounded-lg">
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <p className="text-sm text-[#737373]">Base</p>
-                              <p className="text-white">
-                                {baseOptions.find((b) => b.id === config.base)?.name}
-                              </p>
-                            </div>
-                            <p className="text-[#c9a962]">
-                              +${baseOptions.find((b) => b.id === config.base)?.price}
-                            </p>
-                          </div>
+                          <p className="text-sm text-[#737373]">Base</p>
+                          <p className="text-white">
+                            {
+                              baseOptions.find((b) => b.id === config.base)
+                                ?.name
+                            }
+                          </p>
                         </div>
                       )}
 
-                      {/* Modules */}
                       {config.modules.length > 0 && (
                         <div className="p-4 bg-[#141414] border border-[#262626] rounded-lg">
-                          <p className="text-sm text-[#737373] mb-3">Cooking Modules</p>
+                          <p className="text-sm text-[#737373] mb-3">
+                            Cooking Modules
+                          </p>
                           <div className="space-y-2">
                             {config.modules.map((id) => {
-                              const module = cookingModules.find((m) => m.id === id);
+                              const module = cookingModules.find(
+                                (m) => m.id === id
+                              );
                               return (
-                                <div
-                                  key={id}
-                                  className="flex justify-between items-center"
-                                >
-                                  <p className="text-white">{module?.name}</p>
-                                  <p className="text-[#c9a962]">+${module?.price}</p>
-                                </div>
+                                <p key={id} className="text-white">
+                                  {module?.name}
+                                </p>
                               );
                             })}
                           </div>
                         </div>
                       )}
 
-                      {/* Accessories */}
                       {config.accessories.length > 0 && (
                         <div className="p-4 bg-[#141414] border border-[#262626] rounded-lg">
-                          <p className="text-sm text-[#737373] mb-3">Accessories</p>
+                          <p className="text-sm text-[#737373] mb-3">
+                            Accessories
+                          </p>
                           <div className="space-y-2">
                             {config.accessories.map((id) => {
-                              const item = accessories.find((a) => a.id === id);
+                              const item = accessories.find(
+                                (a) => a.id === id
+                              );
                               return (
-                                <div
-                                  key={id}
-                                  className="flex justify-between items-center"
-                                >
-                                  <p className="text-white">{item?.name}</p>
-                                  <p className="text-[#c9a962]">+${item?.price}</p>
-                                </div>
+                                <p key={id} className="text-white">
+                                  {item?.name}
+                                </p>
                               );
                             })}
                           </div>
                         </div>
                       )}
 
-                      {/* Tools */}
                       {config.tools.length > 0 && (
                         <div className="p-4 bg-[#141414] border border-[#262626] rounded-lg">
                           <p className="text-sm text-[#737373] mb-3">Tools</p>
@@ -575,29 +543,28 @@ export default function ConfiguratorPage() {
                             {config.tools.map((id) => {
                               const item = tools.find((t) => t.id === id);
                               return (
-                                <div
-                                  key={id}
-                                  className="flex justify-between items-center"
-                                >
-                                  <p className="text-white">{item?.name}</p>
-                                  <p className="text-[#c9a962]">+${item?.price}</p>
-                                </div>
+                                <p key={id} className="text-white">
+                                  {item?.name}
+                                </p>
                               );
                             })}
                           </div>
                         </div>
                       )}
 
-                      {/* Total */}
-                      <div className="p-6 bg-[#c9a962]/10 border border-[#c9a962]/30 rounded-lg">
-                        <div className="flex justify-between items-center">
-                          <p className="text-lg text-white">Total</p>
-                          <p className="text-3xl font-light text-[#c9a962] price-tag">
-                            ${total.toLocaleString()}
-                          </p>
-                        </div>
-                        <p className="text-sm text-[#737373] mt-2">
-                          Fully refundable $500 deposit to reserve
+                      {/* Reserve CTA */}
+                      <div className="p-6 bg-[#c9a962]/10 border border-[#c9a962]/30 rounded-lg text-center">
+                        <p className="text-sm text-[#737373] mb-2">
+                          Fully refundable deposit
+                        </p>
+                        <p className="text-4xl font-extralight text-[#c9a962] price-tag mb-3">
+                          $100
+                        </p>
+                        <p className="text-sm text-[#737373] mb-1">
+                          Reserve your configuration with priority access
+                        </p>
+                        <p className="text-xs text-[#525252]">
+                          Final pricing announced at launch
                         </p>
                       </div>
                     </div>
@@ -613,7 +580,7 @@ export default function ConfiguratorPage() {
               <button
                 onClick={prevStep}
                 disabled={currentStep === 0}
-                className={`flex items-center gap-2 px-6 py-3 text-sm tracking-widest transition-all ${
+                className={`flex items-center gap-2 px-6 py-3 text-sm tracking-widest transition-all cursor-pointer ${
                   currentStep === 0
                     ? "text-[#404040] cursor-not-allowed"
                     : "text-[#a3a3a3] hover:text-white"
@@ -626,14 +593,14 @@ export default function ConfiguratorPage() {
               {currentStep < steps.length - 1 ? (
                 <button
                   onClick={nextStep}
-                  className="btn-luxury flex items-center gap-2 px-8 py-3 bg-[#c9a962] text-[#0a0a0a] text-sm tracking-widest font-medium hover:bg-[#e8d4a8] transition-all"
+                  className="btn-luxury flex items-center gap-2 px-8 py-3 bg-[#c9a962] text-[#0a0a0a] text-sm tracking-widest font-medium hover:bg-[#e8d4a8] transition-all cursor-pointer"
                 >
                   CONTINUE
                   <ArrowRight size={16} />
                 </button>
               ) : (
-                <button className="btn-luxury flex items-center gap-2 px-8 py-3 bg-[#c9a962] text-[#0a0a0a] text-sm tracking-widest font-medium hover:bg-[#e8d4a8] transition-all">
-                  RESERVE NOW — $500
+                <button className="btn-luxury flex items-center gap-2 px-8 py-3 bg-[#c9a962] text-[#0a0a0a] text-sm tracking-widest font-medium hover:bg-[#e8d4a8] transition-all cursor-pointer">
+                  RESERVE — $100
                   <ArrowRight size={16} />
                 </button>
               )}

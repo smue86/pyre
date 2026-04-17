@@ -1,167 +1,119 @@
 "use client";
 
 import Link from "next/link";
-import { Instagram, Twitter, Youtube } from "lucide-react";
+import Image from "next/image";
 
 export default function Footer() {
   return (
     <footer className="relative py-16 bg-[#0a0a0a] border-t border-[#1a1a1a]">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-12 mb-16">
-          {/* Logo and tagline */}
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="inline-block mb-6">
-              <span className="text-2xl font-light tracking-[0.3em] text-gradient">
-                PYRE
-              </span>
+              <Image
+                src="/images/pyre-logo.svg"
+                alt="PYRE"
+                width={120}
+                height={33}
+                className="h-7 w-auto"
+              />
             </Link>
             <p className="text-sm text-[#525252] leading-relaxed">
               The future of fire.
               <br />
-              Engineered for perfection.
+              Engineered from the material up.
             </p>
           </div>
 
-          {/* Product */}
           <div>
-            <p className="text-xs tracking-[0.2em] text-[#737373] mb-6">
+            <h4 className="text-xs tracking-[0.2em] text-[#a3a3a3] mb-6">
               PRODUCT
-            </p>
-            <ul className="space-y-4">
-              <li>
-                <Link
-                  href="#technology"
-                  className="text-sm text-[#525252] hover:text-[#c9a962] transition-colors"
-                >
-                  Technology
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#platform"
-                  className="text-sm text-[#525252] hover:text-[#c9a962] transition-colors"
-                >
-                  Platform
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#intelligence"
-                  className="text-sm text-[#525252] hover:text-[#c9a962] transition-colors"
-                >
-                  Intelligence
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/configure"
-                  className="text-sm text-[#525252] hover:text-[#c9a962] transition-colors"
-                >
-                  Configure
-                </Link>
-              </li>
+            </h4>
+            <ul className="space-y-3">
+              {[
+                { label: "Design", href: "#design" },
+                { label: "AeroCore", href: "#foundation" },
+                { label: "Platform", href: "#platform" },
+                { label: "PyreMind", href: "#pyremind" },
+                { label: "Configure", href: "/configure" },
+              ].map((item) => (
+                <li key={item.label}>
+                  <Link
+                    href={item.href}
+                    className="text-sm text-[#525252] hover:text-[#c9a962] transition-colors duration-300"
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Company */}
           <div>
-            <p className="text-xs tracking-[0.2em] text-[#737373] mb-6">
+            <h4 className="text-xs tracking-[0.2em] text-[#a3a3a3] mb-6">
               COMPANY
-            </p>
-            <ul className="space-y-4">
+            </h4>
+            <ul className="space-y-3">
+              {[
+                { label: "Our Story", href: "#observation" },
+                { label: "Momentum Labs", href: "#observation" },
+                { label: "Swag", href: "#swag" },
+              ].map((item) => (
+                <li key={item.label}>
+                  <Link
+                    href={item.href}
+                    className="text-sm text-[#525252] hover:text-[#c9a962] transition-colors duration-300"
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-xs tracking-[0.2em] text-[#a3a3a3] mb-6">
+              CONNECT
+            </h4>
+            <ul className="space-y-3">
               <li>
-                <Link
-                  href="#"
-                  className="text-sm text-[#525252] hover:text-[#c9a962] transition-colors"
-                >
-                  About
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-sm text-[#525252] hover:text-[#c9a962] transition-colors"
-                >
-                  Press
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-sm text-[#525252] hover:text-[#c9a962] transition-colors"
-                >
-                  Careers
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-sm text-[#525252] hover:text-[#c9a962] transition-colors"
+                <a
+                  href="mailto:hello@pyrefire.com"
+                  className="text-sm text-[#525252] hover:text-[#c9a962] transition-colors duration-300"
                 >
                   Contact
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Legal */}
-          <div>
-            <p className="text-xs tracking-[0.2em] text-[#737373] mb-6">LEGAL</p>
-            <ul className="space-y-4">
-              <li>
-                <Link
-                  href="#"
-                  className="text-sm text-[#525252] hover:text-[#c9a962] transition-colors"
-                >
-                  Privacy
-                </Link>
+                </a>
               </li>
               <li>
                 <Link
-                  href="#"
-                  className="text-sm text-[#525252] hover:text-[#c9a962] transition-colors"
+                  href="#cta"
+                  className="text-sm text-[#525252] hover:text-[#c9a962] transition-colors duration-300"
                 >
-                  Terms
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-sm text-[#525252] hover:text-[#c9a962] transition-colors"
-                >
-                  Warranty
+                  Get Updates
                 </Link>
               </li>
             </ul>
           </div>
         </div>
 
-        {/* Bottom bar */}
-        <div className="pt-8 border-t border-[#1a1a1a] flex flex-col md:flex-row items-center justify-between gap-6">
-          <p className="text-xs text-[#404040]">
-            © 2026 PYRE. All rights reserved.
+        <div className="pt-8 border-t border-[#1a1a1a] flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-[#333] tracking-wider">
+            &copy; {new Date().getFullYear()} PYRE. A Momentum Labs project.
+            All rights reserved.
           </p>
-
-          {/* Social links */}
           <div className="flex items-center gap-6">
-            <a
+            <Link
               href="#"
-              className="text-[#404040] hover:text-[#c9a962] transition-colors"
+              className="text-xs text-[#333] hover:text-[#c9a962] transition-colors"
             >
-              <Instagram size={18} strokeWidth={1.5} />
-            </a>
-            <a
+              Privacy
+            </Link>
+            <Link
               href="#"
-              className="text-[#404040] hover:text-[#c9a962] transition-colors"
+              className="text-xs text-[#333] hover:text-[#c9a962] transition-colors"
             >
-              <Twitter size={18} strokeWidth={1.5} />
-            </a>
-            <a
-              href="#"
-              className="text-[#404040] hover:text-[#c9a962] transition-colors"
-            >
-              <Youtube size={18} strokeWidth={1.5} />
-            </a>
+              Terms
+            </Link>
           </div>
         </div>
       </div>
